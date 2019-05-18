@@ -1,5 +1,22 @@
 {% extends 'base.html' %}
-
+{% import'_macros.html' as macros %}
 {% block content %}
 {% include '_posts.html' %}
+
+    {{ wtf.quick_form(form) }}
+
+    <ul>
+        {% for c in comments %}
+            <li>{{ c.body }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="pagination">
+    {{ macros.pagination_widget(pagination,'.index')}}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+    {{ pagedown.include_pagedown() }}
 {% endblock %}
