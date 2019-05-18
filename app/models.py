@@ -53,8 +53,8 @@ class Role(db.Model):
 
 class Follow(db.Model):
     __tablename__='follows'
-    follower_id=db.Column(db.Integer,db.ForeignKey('user.id'))
-    followed_id=db.Column(db.Integer,db.ForeignKey('user.id'))
+    follower_id=db.Column(db.Integer,db.ForeignKey('user.id'),primary_key=True)
+    followed_id=db.Column(db.Integer,db.ForeignKey('user.id'),primary_key=True)
     timestamp=db.Column(db.DateTime(),default=datetime.now)
 
 class User(UserMixin,db.Model):
@@ -75,8 +75,8 @@ class User(UserMixin,db.Model):
 
     posts=db.relationship('Post',backref='author',lazy='dynamic')
 
-    followed=db.relationship('Follow',foreign_keys=[Follow.follower_id],
-                             backref=db.backref('follower',lazy='joined'),
+    followed=db.relationship('Follow',foreign_keys=[Follow.followed_id],
+                             backref=db.backref('followed',lazy='joined'),
                              lazy='dynamic',
                              cascade='all,delete-orphan')
     followers=db.relationship('Follow',foreign_keys=[Follow.follower_id],
@@ -98,6 +98,13 @@ class User(UserMixin,db.Model):
                 self.role=Role.query.filter_by(permissions=0XFF).first()
             if self.role is None:
                 self.role=Role.query.filter_by(default=True).first()
+        
+        self.follow(self)
+    
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow,Follow.followed_id == Post.author_id)\
+            .filter(Follow.follower_id == self.id)
 
     def follow(self,user):
         if not self.is_following(user):
@@ -157,7 +164,7 @@ class User(UserMixin,db.Model):
         return True
 
     def can(self,permission):
-        #如果用户有了权限，而且权限
+        #如果用户有了权限
         return self.role is not None and (self.role.permissions & permission)==permission
 
     def is_administrator(self):
@@ -209,8 +216,6 @@ class AnonymousUser(AnonymousUserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-
 
 login_manager.anonymous_user=AnonymousUser
 db.event.listen(Post.body,'set',Post.on_changed_body)
