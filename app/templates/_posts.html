@@ -1,0 +1,15 @@
+<ul>
+    {% for post in posts %}
+        {% if post.body_html %}
+        <li>{{ post.body_html|safe }}</li>
+        {% else %}
+        <li>{{ post.body }}---{{ post.timestamp }}</li>
+        {% endif %}
+        <a href="{{ url_for('main.post',id=post.id) }}">link</a>
+        {%  if current_user==post.author %}
+        <a href="{{ url_for('main.edit',id=post.id) }}">edit</a>
+        {% elif current_user.is_administrator %}
+        <a href="{{ url_for('main.edit',id=post.id) }}">editAdmin</a>
+        {% endif %}
+    {% endfor %}
+</ul>

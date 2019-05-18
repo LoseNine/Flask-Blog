@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div>
+    <img class="img-rounded" src="{{ user.gravatar(size=256) }}">
+    </div>
+
+<ul class="list-group">
+  <li class="list-group-item">{{ user.username }}</li>
+  <li class="list-group-item">{{ user.location or "暂无"}}</li>
+  <li class="list-group-item">{{ user.about_me or "暂无"}}</li>
+  <li class="list-group-item">{{ user.last_seen or "暂无"}}</li>
+    {% if user==current_user %}
+    <a class="btn btn-danger" href="{{ url_for('main.edit_profile') }}">修改</a>
+    {% endif %}
+
+    {% if  current_user.is_administrator %}
+    <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin',id=user.id) }}">管理员修改</a>
+    {% endif %}
+
+</ul>
+
+    <h3>Posts</h3>
+    {% include "_posts.html" %}
+{% endblock %}
